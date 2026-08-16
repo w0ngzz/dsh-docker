@@ -1,0 +1,7 @@
+.env
+
+*.tar
+*.tar.gz
+
+.DS_Store
+Thumbs.db
