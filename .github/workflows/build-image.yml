@@ -1,0 +1,48 @@
+name: Build DSH Docker Image
+
+on:
+  workflow_dispatch:
+
+  push:
+    branches:
+      - main
+    paths:
+      - "Dockerfile"
+      - ".github/workflows/build-image.yml"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            --tag dsh-local:latest \
+            .
+
+      - name: Show image info
+        run: |
+          docker image ls dsh-local:latest
+          docker run --rm dsh-local:latest node --version
+          docker run --rm dsh-local:latest dsh --help
+
+      - name: Export Docker image
+        run: |
+          docker save dsh-local:latest | gzip > dsh-local-amd64.tar.gz
+
+      - name: Generate SHA256
+        run: |
+          sha256sum dsh-local-amd64.tar.gz > dsh-local-amd64.tar.gz.sha256
+
+      - name: Upload Docker image
+        uses: actions/upload-artifact@v4
+        with:
+          name: dsh-local-amd64
+          path: |
+            dsh-local-amd64.tar.gz
+            dsh-local-amd64.tar.gz.sha256
+          retention-days: 30
