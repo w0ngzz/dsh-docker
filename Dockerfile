@@ -6,9 +6,11 @@ RUN apt-get update \
         curl \
         ca-certificates \
         socat \
+        python3 \
+        build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# 在 GitHub 构建阶段直接安装 DSH
+# 在镜像构建阶段安装 DSH
 RUN npm install -g @deepseek-ai/dsh \
     && npm cache clean --force
 
