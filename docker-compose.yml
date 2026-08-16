@@ -1,0 +1,40 @@
+services:
+  dsh:
+    image: "${DSH_IMAGE:-dsh-local:latest}"
+
+    container_name: "${DSH_CONTAINER_NAME:-dsh}"
+
+    working_dir: /workspace
+
+    environment:
+      DSH_HOME: /root/.dsh
+
+    volumes:
+      - "${DSH_WORKSPACE}:/workspace"
+      - dsh_home:/root/.dsh
+
+    ports:
+      - "127.0.0.1:${DSH_PORT:-3080}:3080"
+
+    command:
+      - /bin/bash
+      - -lc
+      - |
+        set -e
+
+        socat \
+          TCP-LISTEN:3080,bind=0.0.0.0,reuseaddr,fork \
+          TCP:127.0.0.1:3081 &
+
+        exec dsh web \
+          --host 127.0.0.1 \
+          --port 3081 \
+          --trusted-host "localhost:${DSH_PORT:-3080}" \
+          --trusted-host "127.0.0.1:${DSH_PORT:-3080}"
+
+    init: true
+
+    restart: unless-stopped
+
+volumes:
+  dsh_home:
